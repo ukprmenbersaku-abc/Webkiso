@@ -17,7 +17,8 @@ import {
   Home, 
   List, 
   Gamepad2, 
-  Layers 
+  Layers,
+  Layout
 } from 'lucide-react';
 
 export const HtmlIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -90,4 +91,12 @@ export const GamepadIcon = ({ className = "w-6 h-6" }: { className?: string }) =
 
 export const LayersIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
   <Layers className={className} />
+);
+
+export const PaletteIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <Palette className={className} />
+);
+
+export const LayoutIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <Layout className={className} />
 );

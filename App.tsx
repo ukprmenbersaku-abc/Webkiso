@@ -10,7 +10,8 @@ import {
   HtmlIcon, CssIcon, JsIcon, 
   CheckCircleIcon, XCircleIcon, BulbIcon, TargetIcon, 
   ArrowLeftIcon, ArrowRightIcon, BeakerIcon,
-  MenuIcon, PlusIcon, HomeIcon, ListIcon, GamepadIcon, LayersIcon, SparklesIcon
+  MenuIcon, PlusIcon, HomeIcon, ListIcon, GamepadIcon, LayersIcon, SparklesIcon,
+  PaletteIcon, LayoutIcon
 } from './components/Icons';
 
 // アイコンマッピング用ヘルパー
@@ -22,6 +23,8 @@ const getModuleIcon = (iconKey: string, className: string) => {
     case 'gamepad': return <GamepadIcon className={className} />;
     case 'layers': return <LayersIcon className={className} />;
     case 'sparkles': return <SparklesIcon className={className} />;
+    case 'palette': return <PaletteIcon className={className} />;
+    case 'layout': return <LayoutIcon className={className} />;
     default: return null;
   }
 };
