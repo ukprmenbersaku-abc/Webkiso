@@ -38,16 +38,25 @@ HTMLでは、このように \`<タグ名>\`（開始タグ）と \`</タグ名>
         ],
         validate: (code: string) => {
           const cleanCode = code.replace(/\s+/g, ' ').trim();
+          if (/[＜＞]/.test(code)) {
+            return { passed: false, feedback: 'タグの記号 < や > が全角（＜＞）になっています。半角英文字で入力しましょう。' };
+          }
+          if (code.includes('H1')) {
+            return { passed: false, feedback: 'タグは小文字 <h1> で書くのが一般的です。小文字に直してみましょう。' };
+          }
           if (!cleanCode.includes('<h1>')) {
-            return { passed: false, feedback: '<h1>タグが見つかりません。開始タグを書いてみましょう。' };
+            return { passed: false, feedback: '開始タグ <h1> が見つかりません。' };
           }
           if (!cleanCode.includes('</h1>')) {
-            return { passed: false, feedback: '</h1>タグが見つかりません。終了タグを忘れていませんか？' };
+            return { passed: false, feedback: '終了タグ </h1> が見つかりません。タグは最後を </h1> で閉じます。' };
+          }
+          if (cleanCode.includes('こんにちは') && !cleanCode.includes('こんにちは！')) {
+            return { passed: false, feedback: '「！」（びっくりマーク）を忘れていませんか？正確に入力しましょう。' };
           }
           if (/<h1>\s*こんにちは！\s*<\/h1>/.test(cleanCode)) {
             return { passed: true, feedback: '完璧です！Web開発の第一歩を踏み出しましたね。' };
           }
-          return { passed: false, feedback: 'タグの中身が「こんにちは！」になっているか確認しましょう。' };
+          return { passed: false, feedback: 'タグの中身が「こんにちは！」と正確に一致しているか確認してください。' };
         }
       },
       {
@@ -78,14 +87,23 @@ HTMLでは、このように \`<タグ名>\`（開始タグ）と \`</タグ名>
           '文章の内容は何でもOKです！'
         ],
         validate: (code: string) => {
-          if (!/<p>/.test(code) || !/<\/p>/.test(code)) {
-            return { passed: false, feedback: '<p>タグと</p>タグを使って文章を囲んでください。' };
+          if (/[＜＞]/.test(code)) {
+            return { passed: false, feedback: '全角の記号（＜＞）が使われています。半角の < > を使いましょう。' };
+          }
+          if (!/<p>/.test(code)) {
+            return { passed: false, feedback: '開始タグ <p> が見つかりません。' };
+          }
+          if (!/<\/p>/.test(code)) {
+            return { passed: false, feedback: '終了タグ </p> が見つかりません。' };
+          }
+          if (!/<h1>.*<\/h1>/s.test(code)) {
+            return { passed: false, feedback: '元の <h1> タグを消してしまったようです。復活させてみましょう。' };
           }
           const match = code.match(/<p>(.*?)<\/p>/s);
           if (match && match[1].trim().length > 0) {
              return { passed: true, feedback: '素晴らしい！文章が表示されました。Webサイトらしくなってきましたね。' };
           }
-          return { passed: false, feedback: '<p>タグの中に何か文字を書いてみましょう。' };
+          return { passed: false, feedback: '<p>タグの中に、あなたの好きな食べ物などの文章を書いてみましょう。' };
         }
       },
       {
@@ -121,8 +139,13 @@ HTMLでは、このように \`<タグ名>\`（開始タグ）と \`</タグ名>
           '<img src="cat.png"> という形になります。'
         ],
         validate: (code: string) => {
-          if (!/<img/.test(code)) return { passed: false, feedback: '<img>タグを使ってみましょう。' };
-          if (!/src=["']cat\.png["']/.test(code)) return { passed: false, feedback: 'src属性に "cat.png" を指定してください。' };
+          if (!/<img/.test(code)) return { passed: false, feedback: '<img>タグが書かれていません。<img から書き始めましょう。' };
+          if (code.includes('</img>')) return { passed: false, feedback: '<img>タグには終了タグ（</img>）は不要です。消してみましょう。' };
+          if (!/src=/.test(code)) return { passed: false, feedback: 'src属性（画像の場所を指定する設定）がありません。src="cat.png" を追加しましょう。' };
+          if (!/src=["']cat\.png["']/.test(code)) {
+            if (/src=["']cat["']/.test(code)) return { passed: false, feedback: 'ファイル名が正しくありません。"cat.png" のように拡張子まで書きましょう。' };
+            return { passed: false, feedback: 'src属性の値が "cat.png" になっているか確認しましょう。' };
+          }
           return { passed: true, feedback: 'バッチリです！画像が表示されると一気に華やかになりますね。（プレビューでは仮の画像が表示されます）' };
         }
       },
@@ -160,7 +183,10 @@ HTMLでは、このように \`<タグ名>\`（開始タグ）と \`</タグ名>
           '<li>タグは3回使いましょう。'
         ],
         validate: (code: string) => {
+          if (/[＜＞]/.test(code)) return { passed: false, feedback: '全角の記号（＜＞）が混ざっています。半角の < > を使いましょう。' };
+          if (code.includes('ul') && !code.includes('li')) return { passed: false, feedback: '<ul>タグの中に <li>タグを入れましょう。' };
           if (!/<ul>/.test(code)) return { passed: false, feedback: '<ul>タグで全体を囲みましょう。' };
+          if (!/<\/ul>/.test(code)) return { passed: false, feedback: '</ul>で閉じられていますか？' };
           const liMatches = code.match(/<li>/g);
           if (!liMatches || liMatches.length < 3) return { passed: false, feedback: '<li>タグを使って項目を3つ以上作ってみましょう。' };
           return { passed: true, feedback: 'きれいなリストができました！情報の整理整頓はとても大切です。' };
@@ -429,14 +455,20 @@ h1 {
           'コロン(:)とセミコロン(;)を消さないように注意！これは「区切り」の合図です。'
         ],
         validate: (code: string) => {
-           const clean = code.replace(/\s/g, '');
-           if (/h1\{[^}]*color:blue;?[^}]*\}/i.test(clean)) {
+          if (code.includes('color') && !code.includes('blue')) {
+             return { passed: false, feedback: '色は「blue」になっていますか？綴りを確認してみましょう。' };
+          }
+          const clean = code.replace(/\s/g, '');
+          if (!/h1/.test(clean)) return { passed: false, feedback: 'h1セレクタが消えているか、書き間違いがあるかもしれません。' };
+          if (!/\{/.test(clean)) return { passed: false, feedback: '波カッコ { を忘れていませんか？' };
+          if (!/\}/.test(clean)) return { passed: false, feedback: '閉じカッコ } を忘れていませんか？' };
+          if (!/color:/.test(clean)) return { passed: false, feedback: 'colorプロパティが見当たりません。' };
+          if (!/;/.test(clean)) return { passed: false, feedback: '最後をセミコロン ; で閉じるのを忘れていませんか？' };
+
+          if (/h1\{[^}]*color:blue;?[^}]*\}/i.test(clean)) {
              return { passed: true, feedback: 'キレイな青色になりましたね！自分の好きな色に変えられると楽しくなります。' };
-           }
-           if (/color:/.test(clean)) {
-             return { passed: false, feedback: '値が blue になっているか確認しましょう。' };
-           }
-           return { passed: false, feedback: 'colorプロパティが見当たりません。' };
+          }
+          return { passed: false, feedback: 'h1 { color: blue; } となるように確認しましょう。' };
         }
       },
       {
@@ -467,11 +499,19 @@ body {
           'スペルが長いので注意しましょう。ハイフンも必要です。'
         ],
         validate: (code: string) => {
+          if (!/body/.test(code)) return { passed: false, feedback: 'bodyセレクタを消してしまったようです。body { ... } と書きましょう。' };
+          if (!/background-color/.test(code)) {
+            if (/background:/.test(code)) return { passed: false, feedback: 'background も使えますが、ここでは background-color を練習してみましょう。' };
+            return { passed: false, feedback: 'background-color プロパティを追加してください。ハイフン（-）を忘れずに！' };
+          }
           const clean = code.replace(/\s/g, '');
           if (/body\{[^}]*background-color:lightyellow;?[^}]*\}/i.test(clean)) {
             return { passed: true, feedback: '明るい雰囲気になりました！背景色はサイトの第一印象を決める重要な要素です。' };
           }
-          return { passed: false, feedback: 'background-color プロパティを使ってみましょう。' };
+          if (/background-color:/.test(clean) && !/lightyellow/.test(clean)) {
+            return { passed: false, feedback: '値に lightyellow が指定されているか確認しましょう。' };
+          }
+          return { passed: false, feedback: 'body { background-color: lightyellow; } の形を確認してみてください。' };
         }
       },
       {
@@ -505,10 +545,16 @@ p {
         ],
         validate: (code: string) => {
           const clean = code.replace(/\s/g, '');
+          if (clean.includes('font-size') && !clean.includes('24px')) {
+            return { passed: false, feedback: 'サイズは「24px」になっていますか？数値を確認しましょう。' };
+          }
+          if (clean.includes('24') && !clean.includes('px')) {
+            return { passed: false, feedback: '単位（px）を忘れていませんか？ 24px のように続けて書きます。' };
+          }
           if (/p\{[^}]*font-size:24px;?[^}]*\}/i.test(clean)) {
             return { passed: true, feedback: '文字が大きくなって、インパクトが出ました！' };
           }
-          return { passed: false, feedback: 'font-size を 24px に設定してみましょう。' };
+          return { passed: false, feedback: 'p { font-size: 24px; } となるように書いてみましょう。' };
         }
       },
       {
@@ -542,10 +588,13 @@ h1 {
         ],
         validate: (code: string) => {
           const clean = code.replace(/\s/g, '');
+          if (clean.includes('text-align') && !clean.includes('center')) {
+             return { passed: false, feedback: '値は「center」になっていますか？綴りを確認しましょう。' };
+          }
           if (/h1\{[^}]*text-align:center;?[^}]*\}/i.test(clean)) {
             return { passed: true, feedback: 'タイトルが真ん中に来て、堂々とした感じになりました！' };
           }
-          return { passed: false, feedback: 'text-align: center; を追加してみましょう。' };
+          return { passed: false, feedback: 'h1 { text-align: center; } と追加してみましょう。' };
         }
       },
       {
@@ -1235,10 +1284,17 @@ const total = apple + 50; // totalの中身は 150 になる
           '数字に " (引用符) は不要です。つけると "10050" という文字になっちゃいます！'
         ],
         validate: (code: string) => {
-          if (/const\s+price\s*=\s*100\s*\+\s*50;?/.test(code)) {
+          if (code.includes('"100"') || code.includes("'100'") || code.includes('"50"') || code.includes("'50'")) {
+            return { passed: false, feedback: '数字を引用符（"）で囲むと「文字」になってしまいます。計算する時は囲まずに 100 + 50 と書きましょう。' };
+          }
+          if (!/price/.test(code)) return { passed: false, feedback: '変数名を price にしましょう。' };
+          if (!/=/.test(code)) return { passed: false, feedback: '代入（=）を忘れていませんか？' };
+          if (!/\+/.test(code)) return { passed: false, feedback: '足し算（+）を使って計算しましょう。' };
+          
+          if (/const\s+price\s*=\s*(100\s*\+\s*50|50\s*\+\s*100);?/.test(code)) {
             return { passed: true, feedback: '正解！JavaScriptは強力な電卓としても使えますね。買い物サイトの合計金額などもこうやって計算しています。' };
           }
-          return { passed: false, feedback: 'const price = 100 + 50; のように書いてみましょう。' };
+          return { passed: false, feedback: 'const price = 100 + 50; と書いてみましょう。' };
         }
       },
       {
@@ -1278,10 +1334,18 @@ if (age === 20) {
         ],
         validate: (code: string) => {
           const clean = code.replace(/\s/g, '');
+          if (!/if/.test(clean)) return { passed: false, feedback: 'if文が見当たりません。if (...) { ... } の形で書きましょう。' };
+          if (!/score/.test(clean)) return { passed: false, feedback: 'score という変数を使っていますか？' };
+          if (clean.includes('score=100')) {
+             if (!clean.includes('score==100') && !clean.includes('score===100')) {
+               return { passed: false, feedback: '比較する時はイコールを3つ（===）使いましょう。1つだと「代入」になってしまいます。' };
+             }
+          }
+          if (!/\{/.test(clean)) return { passed: false, feedback: '波カッコ { を忘れていませんか？' };
           if (/if\(score===100\)/.test(clean) && /console\.log\(["']満点！["']\)/.test(clean)) {
             return { passed: true, feedback: '条件分岐クリア！「もし〇〇なら」というロジックは、ゲームやアプリを作る上で最も重要な考え方の一つです。' };
           }
-          return { passed: false, feedback: 'if (score === 100) { console.log("満点！"); } のように書いてみましょう。' };
+          return { passed: false, feedback: 'if (score === 100) { console.log("満点！"); } と正確に書いてみましょう。' };
         }
       },
       {
@@ -1351,6 +1415,16 @@ h1.innerText = "ようこそ！";
           'innerText の T は大文字です（キャメルケースといいます）。'
         ],
         validate: (code: string) => {
+          if (!/innerText/.test(code) && !/textContent/.test(code)) {
+             return { passed: false, feedback: '中身のテキストを変えるには .innerText プロパティを使いましょう。' };
+          }
+          if (code.includes('innerText') && !code.includes('=')) {
+             return { passed: false, feedback: '値を書き換えるには 代入（=）を使います。要素.innerText = "..." の形にしましょう。' };
+          }
+          if (!/["']変更しました！["']/.test(code)) {
+             return { passed: false, feedback: '変更後の文字は「変更しました！」にしましょう。' };
+          }
+
           if (/h1\.innerText\s*=\s*["']変更しました！["'];?/.test(code) || /h1\.textContent\s*=\s*["']変更しました！["'];?/.test(code)) {
             return { passed: true, feedback: 'おめでとうございます！JSでHTMLを操作できました。チャットアプリで新着メッセージが表示されたりするのは、全部この仕組みです！' };
           }
@@ -1650,6 +1724,13 @@ if (input.value === "") {
           'alertではなく、画面上の文字(innerText)を書き換えるのがモダンなやり方です。'
         ],
         validate: (code: string) => {
+          if (!/error/.test(code)) return { passed: false, feedback: 'error という名前の変数を使っていますか？' };
+          if (!/innerText/.test(code) && !/textContent/.test(code)) {
+            return { passed: false, feedback: 'エラーを表示するには error.innerText を書き換えてみましょう。' };
+          }
+          if (!/["']名前を入力してください["']/.test(code)) {
+            return { passed: false, feedback: 'エラーメッセージの中身は「名前を入力してください」にしましょう。' };
+          }
           if (/error\.innerText\s*=\s*["']名前を入力してください["']/.test(code) || /error\.textContent\s*=\s*["']名前を入力してください["']/.test(code)) {
              return { passed: true, feedback: 'バリデーション完成！これでユーザーに親切なフォームになりました。Webアプリには欠かせない機能です。' };
           }
@@ -1719,6 +1800,10 @@ grid-template-columns: repeat(3, 1fr);
         ],
         validate: (code: string) => {
           const clean = code.replace(/\s/g, '');
+          if (!/display:grid/.test(clean)) return { passed: false, feedback: 'display: grid; が入力されていません。' };
+          if (!/grid-template-columns/.test(clean)) return { passed: false, feedback: 'grid-template-columns プロパティを入力してください。スペルに注意！' };
+          if (!/repeat\(3,1fr\)/.test(clean)) return { passed: false, feedback: 'repeat(3, 1fr) を使って3列にしましょう。' };
+
           if (/display:grid;?/i.test(clean) && /grid-template-columns:repeat\(3,1fr\);?/i.test(clean)) {
              return { passed: true, feedback: 'きれいな3列グリッドができました！これがゲームのフィールドになります。' };
           }
@@ -1751,6 +1836,15 @@ HTMLで \`<div class="hole"></div>\` を9回書くのは面倒ですよね？
           'board.appendChild(hole);'
         ],
         validate: (code: string) => {
+          if (!/createElement\s*\(\s*["']div["']\s*\)/.test(code)) {
+            return { passed: false, feedback: 'document.createElement("div") で新しい要素を作ってみましょう。' };
+          }
+          if (!/className\s*=\s*["']hole["']/.test(code)) {
+            return { passed: false, feedback: 'className に "hole" を設定するのを忘れていませんか？' };
+          }
+          if (!/appendChild/.test(code)) {
+            return { passed: false, feedback: 'appendChild を使って board に追加してください。' };
+          }
           if (/createElement\s*\(\s*["']div["']\s*\)/.test(code) && /className\s*=\s*["']hole["']/.test(code) && /appendChild/.test(code)) {
             return { passed: true, feedback: '9個の穴が生成されました！手作業でHTMLを書くよりずっと効率的で、数の変更も簡単ですね。' };
           }
